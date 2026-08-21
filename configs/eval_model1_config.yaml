@@ -1,0 +1,16 @@
+# HarvestWindow — Model 1 evaluation config
+
+model:
+  weights: ./runs_model1/b1_b4_detector/weights/best.pt
+
+data:
+  data_yaml: data/SawitMVC/data.yaml
+  split: test          # which split from data.yaml to evaluate on
+
+metrics:
+  # mAP50 and mAP50-95 come free from ultralytics' model.val() — no custom
+  # code needed. Per-class breakdown is included in the same call.
+  primary: mAP50-95
+
+output:
+  dir: ./eval_model1

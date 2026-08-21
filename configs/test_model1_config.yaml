@@ -1,0 +1,30 @@
+# HarvestWindow — Model 1 SMOKE TEST config (1 epoch, fast)
+
+model:
+  variant: yolov8n.pt
+
+data:
+  data_yaml: data/SawitMVC/data.yaml
+
+training:
+  epochs: 1
+  imgsz: 320
+  batch: 4
+  patience: 1
+  seed: 42
+  optimizer: auto
+  lr0: 0.01
+
+augmentation:
+  hue: 0.015
+  saturation: 0.5
+  brightness: 0.4
+  crop_zoom_jitter: 0.5
+  translate: 0.1
+  hflip_prob: 0.5
+  vflip_prob: 0.0
+  rotation_degrees: 0.0
+
+output:
+  project: ./runs_test
+  name: test_model1

@@ -1,0 +1,18 @@
+# HarvestWindow — Model 2 evaluation config
+
+model:
+  backbone: mobilenet_v2     # must match what was used in training
+  weights: ./runs_model2/best_model2.pt
+  num_classes: 5
+
+data:
+  root: "data/An Ordinal Dataset for Ripeness Level Classification in Oil Palm Fruit Quality Grading/An Ordinal Dataset for Ripeness Level Classification in Oil Palm Fruit Quality Grading/Dataset/Dataset"
+  split: test
+
+metrics:
+  - confusion_matrix
+  - per_class_precision_recall_f1
+  - overall_accuracy
+
+output:
+  dir: ./eval_model2
