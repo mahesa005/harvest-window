@@ -16,6 +16,7 @@ training:
   # and warmup schedule based on dataset size. Override below if needed:
   optimizer: AdamW           # auto | SGD | Adam | AdamW
   lr0: 0.01                 # only used if optimizer != auto
+  workers: 0                # 0 = load data in main process (avoids Windows venv multiprocessing issue)
 
 augmentation:
   # Note: no grayscale_prob here — ultralytics has no native equivalent.

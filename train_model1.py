@@ -15,6 +15,9 @@ Usage:
     python train_model1.py --config configs/model1_config.yaml
 """
 
+import os
+os.environ["CUDA_MODULE_LOADING"] = "LAZY"
+
 import argparse
 import yaml
 from pathlib import Path
@@ -64,6 +67,8 @@ def main():
     if optimizer != "auto":
         train_kwargs["optimizer"] = optimizer
         train_kwargs["lr0"] = cfg["training"].get("lr0", 0.01)
+
+    train_kwargs["workers"] = cfg["training"].get("workers", 0)
 
     results = model.train(**train_kwargs)
 
