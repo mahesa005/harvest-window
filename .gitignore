@@ -4,6 +4,5 @@ runs_model1/
 runs_model2/
 runs_test/
 __pycache__/
-*.pt
 *.cache
 .claude
