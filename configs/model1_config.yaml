@@ -31,5 +31,5 @@ augmentation:
   rotation_degrees: 0.0
 
 output:
-  project: ./runs_model1
+  project: "C:/Users/Mahesa/OneDrive/ITB/Coding/Personal/Competition/AIC - Compfest 2026/to-be-project-folder/runs_model1"
   name: b1_b4_detector

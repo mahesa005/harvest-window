@@ -31,4 +31,4 @@ augmentation:
   rotation_degrees: 10
 
 output:
-  dir: ./runs_model2
+  dir: "C:/Users/Mahesa/OneDrive/ITB/Coding/Personal/Competition/AIC - Compfest 2026/to-be-project-folder/runs_model2"
