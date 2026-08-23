@@ -61,16 +61,18 @@ def check_photo_quality(image_path: Path, blur_threshold: float = 100.0):
     return True, None
 
 
-def run_model1(model1_path: str, image_path: Path, device: str):
+def run_model1(model, image_path: Path, device: str):
     """
-    Single YOLO forward pass. Reads the stage label from the MODEL'S OWN
-    embedded class names (result.names), not by assuming index position
-    matches STAGES - a checkpoint trained outside this codebase (like the
-    friend-trained yolo11s one) isn't guaranteed to use the same class-id
-    ordering as our data.yaml, even if it was trained on the same classes.
+    Single YOLO forward pass. Accepts an already-loaded YOLO object so
+    callers can reuse it across requests without reloading from disk.
+
+    Reads the stage label from the MODEL'S OWN embedded class names
+    (result.names), not by assuming index position matches STAGES — a
+    checkpoint trained outside this codebase (like the friend-trained
+    yolo11s one) isn't guaranteed to use the same class-id ordering as
+    our data.yaml, even if it was trained on the same classes.
     Validates the label is a real stage rather than silently trusting it.
     """
-    model = YOLO(model1_path)
     results = model.predict(source=str(image_path), device=device, verbose=False)
     result = results[0]
 
@@ -111,12 +113,9 @@ def crop_image(image_path: Path, box, padding_frac: float = 0.1) -> Image.Image:
     return image.crop((x1, y1, x2, y2))
 
 
-def run_model2(checkpoint_path: str, crop: Image.Image, device: str):
-    """Loads via checkpoint_adapter - handles either checkpoint format
-    transparently, and hard-fails on any class-order mismatch rather than
-    silently mislabeling."""
-    model, class_names, _metadata = load_model2(checkpoint_path, device=device)
-
+def run_model2(model, class_names: list, crop: Image.Image, device: str):
+    """Accepts an already-loaded model and class_names (from checkpoint_adapter)
+    so callers can reuse both across requests without reloading from disk."""
     transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
@@ -135,18 +134,24 @@ def run_model2(checkpoint_path: str, crop: Image.Image, device: str):
 
 
 def classify(image_path: str, model1_path: str, model2_path: str, device: str = "cpu") -> dict:
+    """CLI entry point — loads both models from disk then runs the pipeline.
+    The FastAPI server must NOT call this; it loads models once at startup
+    and calls run_model1/run_model2 directly with the already-loaded objects."""
     image_path = Path(image_path)
+
+    model1 = YOLO(model1_path)
+    model2, class_names, _ = load_model2(model2_path, device=device)
 
     passed, reason = check_photo_quality(image_path)
     if not passed:
         return {"status": "rejected", "reason": reason}
 
-    detection = run_model1(model1_path, image_path, device)
+    detection = run_model1(model1, image_path, device)
     if detection is None:
         return {"status": "rejected", "reason": "no_bunch_detected"}
 
     crop = crop_image(image_path, detection["box"])
-    ripeness, ripeness_conf = run_model2(model2_path, crop, device)
+    ripeness, ripeness_conf = run_model2(model2, class_names, crop, device)
     stage = detection["stage"]
 
     rec = compute_recommendation(stage, ripeness)

@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from dataset_kamal import build_official_or_fallback_split, KamalRipenessDataset, CLASS_NAMES
-from models import build_model
+from checkpoint_adapter import load_model2
 
 
 def load_config(path: str) -> dict:
@@ -59,17 +59,9 @@ def main():
     if not weights_path.exists():
         raise FileNotFoundError(f"{weights_path} not found — train Model 2 first")
 
-    checkpoint = torch.load(weights_path, map_location=device)
-    backbone = checkpoint.get("backbone", cfg["model"]["backbone"])
-    num_classes = checkpoint.get("num_classes", cfg["model"]["num_classes"])
-    class_names = checkpoint.get("class_names", CLASS_NAMES)
-
-    print(f"Loaded checkpoint from epoch {checkpoint.get('epoch', '?')}, "
-          f"val_acc={checkpoint.get('val_acc', '?')}")
-
-    model = build_model(backbone, num_classes).to(device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    model.eval()
+    model, class_names, metadata = load_model2(str(weights_path), device=str(device))
+    print(f"Loaded checkpoint via checkpoint_adapter. "
+          f"epoch={metadata.get('epoch', '?')}, val_acc={metadata.get('val_acc', '?')}")
 
     root = Path(cfg["data"]["root"])
     splits = build_official_or_fallback_split(root)

@@ -1,0 +1,33 @@
+INFO:     Started server process [20008]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+[startup] Loading Model 1 (weights/model1_stage_detector_yolo11s.pt) on cuda...
+[startup] Loading Model 2 (weights/model2_ripeness_mobilenetv3large.pt) on cuda...
+[startup] Models ready. Model2 class_names=['unripe', 'partially_ripe', 'ripe', 'overripe', 'decayed'] val_acc=None
+INFO:     127.0.0.1:51673 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51689 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60550 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60558 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60570 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58900 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58900 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64852 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49325 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61333 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62598 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54750 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54311 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50477 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58746 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58419 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58221 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49669 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53174 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61126 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56131 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53082 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61959 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58037 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63224 - "POST /api/classify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62574 - "POST /api/classify HTTP/1.1" 200 OK

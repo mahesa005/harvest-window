@@ -1,7 +1,7 @@
 # HarvestWindow — Model 1 evaluation config
 
 model:
-  weights: ./runs_model1/b1_b4_detector/weights/best.pt
+  weights: weights/model1_stage_detector_yolo11s.pt
 
 data:
   data_yaml: data/SawitMVC/data.yaml
