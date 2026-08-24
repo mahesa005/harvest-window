@@ -2,61 +2,87 @@
 
 AI-powered oil palm (kelapa sawit) harvest-readiness assessment. Scan a bunch photo once, get an immediate recommendation — harvest now, or an estimated return-visit window if it's not ready yet. Built for AIC COMPFEST 18.
 
-## What it does
+## Architecture
 
-A single photo goes through two models in sequence:
+A single photo passes through two models in sequence, never in parallel:
 
-1. **Model 1** (YOLO detector) — finds the bunch in the photo and classifies its temporal stage (B1–B4, Black Bunch Census method: how many months out from harvest)
-2. **Model 2** (ripeness classifier) — runs on the cropped detection, classifies visual ripeness (unripe / partially ripe / ripe / overripe / decayed)
+```
+Photo
+  └─► Quality guard (blur + lighting check)
+        └─► Model 1 — YOLO: detects the bunch AND classifies B-stage in one pass
+              └─► Crop (primary detection box, padded)
+                    └─► Model 2 — ripeness classifier on the crop only
+                                  (never sees the original photo)
+                          └─► Rule engine → recommendation JSON
+```
 
-A rule engine combines both outputs into one plain-language recommendation — including a **return-visit window** (e.g. "come back in 4–6 weeks") when the bunch isn't ready yet, computed directly from a single scan with no tracking or history required. Implausible stage/ripeness combinations (e.g. a bunch estimated ~3 months out already showing overripe) are flagged for manual verification instead of forcing a confident answer.
+**Model 1** (YOLO) locates the bunch and classifies its temporal stage (B1–B4, Black Bunch Census method). B-stage indicates how many weeks out from typical harvest the bunch is — B1 is nearest, B4 is ~4 months out.
+
+**Model 2** (MobileNetV3-Large) classifies the visual ripeness of the cropped detection into five classes: unripe / partially ripe / ripe / overripe / decayed.
+
+The **rule engine** is a deterministic 4×5 lookup table (stage × ripeness). Implausible combinations (e.g. B3 stage + overripe color) are returned as `anomaly` rather than forcing a confident wrong answer. Harvest-ready combinations return `harvest_now` or `harvest_immediately`. Not-ready combinations return a recheck window in weeks.
 
 ## Quick start
 
-Requires Docker and Docker Compose.
+Requires Docker and Docker Compose. Model weights are committed to the repo and baked into the image — no separate download needed to run inference.
 
 ```bash
-git clone <this-repo-url>
-cd harvestwindow
+git clone https://github.com/mahesa005/harvest-window.git
+cd harvest-window
 docker compose up --build
 ```
 
-Open **http://localhost:8000** in a browser. Upload a bunch photo and the result appears in a few seconds.
+Open **http://localhost:8000** in a browser. Upload a bunch photo — result appears in a few seconds.
 
 To stop: `docker compose down`
 
+**CPU-only machines:** the server defaults to CUDA. Override with:
+
+```bash
+DEVICE=cpu docker compose up --build
+```
+
 ## API
 
-Single endpoint, synchronous, matches the competition's single-input/single-output constraint.
+Single endpoint, synchronous, `multipart/form-data`.
 
 ```
 POST /api/classify
-Content-Type: multipart/form-data
-
-Fields:
-  image     (file, required)                     — the bunch photo
-  language  (string, optional, default "id")     — "id" | "en"
 ```
 
-Example:
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `image` | file | yes | Bunch photo (JPEG/PNG) |
+| `language` | string | no | Default `"id"` — accepted but reserved for future use |
+
+**Example:**
 ```bash
 curl -X POST http://localhost:8000/api/classify \
-  -F "image=@sample.jpg"
+  -F "image=@photo.jpg"
 ```
 
-Response is always `200 OK`, one of three shapes depending on outcome:
+Response is always `200 OK`. Three possible shapes:
 
-**Rejected** (photo quality issue or no bunch detected):
+**`rejected`** — photo quality failed or no bunch detected:
 ```json
-{"status": "rejected", "reason": "blurry"}
+{
+  "status": "rejected",
+  "reason": "blurry"
+}
 ```
+`reason` values: `"blurry"` · `"poor_lighting"` · `"no_bunch_detected"`
 
-**Anomaly** (stage and ripeness readings don't plausibly match):
+**`anomaly`** — stage and ripeness readings are implausible together:
 ```json
-{"status": "anomaly", "stage": "B2", "ripeness": "overripe", "message": "..."}
+{
+  "status": "anomaly",
+  "stage": "B3",
+  "ripeness": "overripe",
+  "message": "Overripe at a ~3-month-out stage — implausible, verify manually"
+}
 ```
 
-**Classified** (normal result):
+**`classified`** — normal result:
 ```json
 {
   "status": "classified",
@@ -70,48 +96,188 @@ Response is always `200 OK`, one of three shapes depending on outcome:
 }
 ```
 
+`recheck_window_weeks` is `null` for harvest-now/immediately outcomes.
+`confidence` is an integer percentage (average of Model 1 and Model 2 softmax confidence).
+
+## Datasets
+
+The `data/` directory is gitignored. Download and extract both datasets before training.
+
+### Dataset 1 — SawitMVC (Model 1)
+
+**Download:** https://zenodo.org/records/20336323/files/SawitMVC.zip?download=1 (2.4 GB)
+
+**License:** CC BY-NC 4.0 (non-commercial)
+
+Extract so the directory layout matches exactly:
+
+```
+data/
+└── SawitMVC/
+    ├── data.yaml           ← referenced by configs/model1_config.yaml
+    ├── data_balanced.yaml  ← referenced by configs/model1_config_balanced.yaml
+    ├── images/
+    ├── labels/
+    ├── data/
+    └── json/
+```
+
+**Citation:**
+> Indriani, F., Saputro, S. W., Muttaqin, M. Z., Rahmi, A., Saragih, T. H., Budianoor, R., Hartoni, & Kartini, D., Said, N. (2026). SawitMVC: A Multi-View Oil Palm Fruit Bunch Dataset for Detection and Counting (Version 1.0) [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.20336323
+
+---
+
+### Dataset 2 — Ordinal Dataset for Ripeness Level Classification (Model 2)
+
+**Download:** https://data.mendeley.com/datasets/424y96m6sw/1
+
+**Citation:** see the "Cite this dataset" section on the Mendeley page above (DOI: 10.17632/424y96m6sw.1)
+
+Extract so the directory layout matches exactly (the nested folder name is part of the dataset's own structure, not a mistake):
+
+```
+data/
+└── An Ordinal Dataset for Ripeness Level Classification in Oil Palm Fruit Quality Grading/
+    └── An Ordinal Dataset for Ripeness Level Classification in Oil Palm Fruit Quality Grading/
+        └── Dataset/
+            └── Dataset/            ← this path is what configs/model2_config.yaml points to
+                ├── Images/
+                │   ├── 0Immature/
+                │   ├── 1PartiallyRipe/
+                │   ├── 2FullyRipe/
+                │   ├── 3OverRipe/
+                │   └── 4Decayed/
+                └── Train_val_test_split/
+                    ├── Training.txt
+                    ├── Validation.txt
+                    └── Testing.txt
+```
+
+If `Train_val_test_split/` files are missing or fewer than 50% of entries match files on disk, `dataset_kamal.py` will automatically fall back to a fresh stratified split (seed 42) and log a warning — it will not silently proceed on a broken split.
+
+## Training your own weights
+
+**Prerequisites:** Python 3.12, `pip install -r requirements.txt`. Both datasets extracted as shown above.
+
+**Config note:** `configs/model1_config.yaml`, `configs/model1_config_balanced.yaml`, and `configs/model2_config.yaml` contain hardcoded absolute Windows paths in their `output.project` / `output.dir` fields. Update these to your own paths before running training. The test and eval configs use relative paths and do not need changes.
+
+### Model 1 (YOLO detector, B1–B4)
+
+```bash
+# Full training run (~50 epochs, early stop at patience=15)
+python scripts/train_model1.py --config configs/model1_config.yaml
+
+# Balanced variant (oversampled training set, separate run dir)
+python scripts/train_model1.py --config configs/model1_config_balanced.yaml
+
+# Smoke test (1 epoch, imgsz=320, relative output path — no path edit needed)
+python scripts/train_model1.py --config configs/test_model1_config.yaml
+```
+
+Best weights are saved to `<output.project>/<output.name>/weights/best.pt` by ultralytics automatically.
+
+Evaluate on the test split:
+
+```bash
+python scripts/evaluate_model1.py --config configs/eval_model1_config.yaml
+```
+
+Outputs: mAP50, mAP50-95, per-class breakdown, confusion matrix, PR curves — written to `evals/model1/eval/`.
+
+---
+
+### Model 2 (ripeness classifier, 5-class)
+
+```bash
+# Full training run (~30 epochs, early stop at patience=7)
+python scripts/train_model2.py --config configs/model2_config.yaml
+
+# Smoke test (1 epoch)
+python scripts/train_model2.py --config configs/test_model2_config.yaml
+```
+
+Best checkpoint saved to `<output.dir>/best_model2.pt`.
+
+Evaluate on the test split:
+
+```bash
+python scripts/evaluate_model2.py --config configs/eval_model2_config.yaml
+```
+
+Outputs: classification report and confusion matrix PNG — written to `evals/model2/`.
+
+---
+
+### Pipeline smoke test (no training required)
+
+```bash
+python pipeline.py \
+  --image path/to/photo.jpg \
+  --model1 weights/model1_stage_detector_yolov8n_balanced.pt \
+  --model2 weights/model2_ripeness_mobilenetv3large.pt \
+  --device cpu
+```
+
 ## Repository structure
 
 ```
-├── server.py               FastAPI app — loads both models once at startup, exposes POST /api/classify
-├── pipeline.py             Core inference: quality guard -> Model 1 -> crop -> Model 2 -> rule engine
-├── recommend.py            Rule engine — the locked B-stage x ripeness recommendation table
-├── checkpoint_adapter.py   Loads Model 2 checkpoints regardless of training-script origin
+.
+├── server.py               FastAPI app — loads both models once at startup
+├── pipeline.py             End-to-end inference (also a CLI entry point)
+├── recommend.py            Rule engine — the locked B-stage × ripeness table
+├── checkpoint_adapter.py   Loads Model 2 checkpoints in either checkpoint format
 ├── models.py               Model 2 backbone factory (mobilenet_v2 / efficientnet_b0 / mobilenet_v3_large)
-├── static/index.html       Web frontend
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── configs/
+│   ├── model1_config.yaml              Model 1 full training
+│   ├── model1_config_balanced.yaml     Model 1 balanced retrain
+│   ├── model2_config.yaml              Model 2 full training
+│   ├── eval_model1_config.yaml         Model 1 evaluation
+│   ├── eval_model2_config.yaml         Model 2 evaluation
+│   ├── test_model1_config.yaml         Model 1 smoke test (1 epoch)
+│   └── test_model2_config.yaml         Model 2 smoke test (1 epoch)
+├── evals/
+│   └── model2/
+│       ├── classification_report.txt
+│       └── confusion_matrix.png
+├── pretrained/
+│   ├── yolov8n.pt          Base YOLO weights for training Model 1
+│   └── yolo26n.pt
+├── runs/
+│   └── model1/
+│       └── b1_b4_detector_balanced/    Training artifacts (curves, confusion matrix, weights/)
 ├── scripts/
-│   ├── train_model1.py / train_model2.py       Training scripts (config-driven)
-│   ├── evaluate_model1.py / evaluate_model2.py Evaluation scripts (mAP / confusion matrix)
-│   ├── augmentation.py     Shared augmentation spec -> YOLO kwargs + torchvision transforms
-│   └── dataset_kamal.py    Model 2 dataset class + train/val/test split logic
-├── configs/                YAML configs for training and evaluation, per model
-└── weights/                Trained model checkpoints
+│   ├── train_model1.py
+│   ├── train_model2.py
+│   ├── evaluate_model1.py
+│   ├── evaluate_model2.py
+│   ├── augmentation.py     Shared augmentation spec → YOLO kwargs + torchvision transforms
+│   └── dataset_kamal.py    Model 2 dataset class + official/fallback split logic
+├── static/
+│   └── index.html          Web frontend
+└── weights/
+    ├── model1_stage_detector_yolov8n_balanced.pt   ← default Model 1 weights
+    ├── model1_stage_detector_yolo11s.pt
+    ├── model1_test_metrics.json
+    ├── model2_ripeness_mobilenetv3large.pt          ← default Model 2 weights
+    └── model2_test_metrics.json
 ```
 
 ## Model performance (test set)
 
 | Model | Metric | Value |
 |---|---|---|
-| Model 1 (YOLO, B1-B4 stage) | mAP50 / mAP50-95 | 0.527 / 0.250 |
-| Model 2 (ripeness, 5-class) | Test accuracy | 96.5% |
+| Model 1 (YOLO, B1–B4 stage, balanced retrain) | mAP50 | 0.527 |
+| Model 1 (YOLO, B1–B4 stage, balanced retrain) | mAP50-95 | 0.250 |
+| Model 2 (MobileNetV3-Large, 5-class ripeness) | Test accuracy | 96.5% |
 
-Full per-class breakdowns available in `evals/model1/` and `evals/model2/` after running the evaluation scripts.
+**Model 1 per-class mAP50:** B1 0.747 · B2 0.419 · B3 0.599 · B4 0.342 (source: `evals/model1/eval/`)
 
-**Framing note:** Model 1's B-stage output represents agreement with expert Black Bunch Census (BBC) classification, not a validated prediction of actual harvest date — BBC itself carries known real-world error against realized production (independently reported MAPE up to ~76% for bunch-count estimation). The product's claim is that it automates BBC-standard assessment for users without access to a trained surveyor, not that it exceeds the accuracy of the method it replicates.
+**Model 2 per-class recall:** unripe 98.3% · partially ripe 93.9% · ripe 96.9% · overripe 97.1% · decayed 100% (source: `evals/model2/classification_report.txt`, 718 test samples)
 
-## Training your own weights
-
-```bash
-pip install -r requirements.txt
-
-python scripts/train_model1.py --config configs/model1_config.yaml
-python scripts/evaluate_model1.py --config configs/eval_model1_config.yaml
-
-python scripts/train_model2.py --config configs/model2_config.yaml
-python scripts/evaluate_model2.py --config configs/eval_model2_config.yaml
-```
-
-Fast smoke-test configs (1 epoch each) are available at `configs/test_model1_config.yaml` / `configs/test_model2_config.yaml` for a quick sanity check before committing to a full run.
+**Framing note:** Model 1's B-stage output represents agreement with expert Black Bunch Census (BBC) classification, not a validated prediction of actual harvest date — BBC itself carries known real-world error against realized production. The product's claim is that it automates BBC-standard assessment for users without access to a trained surveyor, not that it exceeds the accuracy of the method it replicates.
 
 ## Scope note (qualifying round)
 
