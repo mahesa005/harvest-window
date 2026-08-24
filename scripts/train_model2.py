@@ -12,12 +12,15 @@ Patience: stops training early if val accuracy hasn't improved in N
 epochs (config: training.patience).
 
 Usage:
-    python train_model2.py --config configs/model2_config.yaml
+    python scripts/train_model2.py --config configs/model2_config.yaml
 """
 
+import sys
 import argparse
 import yaml
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import torch
 import torch.nn as nn
@@ -147,7 +150,7 @@ def main():
 
     print(f"\nTraining complete. Best val accuracy: {best_val_acc:.4f}")
     print(f"Best weights: {output_dir / 'best_model2.pt'}")
-    print("\nNext: python evaluate_model2.py --config configs/eval_model2_config.yaml")
+    print("\nNext: python scripts/evaluate_model2.py --config configs/eval_model2_config.yaml")
 
 
 if __name__ == "__main__":

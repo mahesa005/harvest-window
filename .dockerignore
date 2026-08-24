@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+data/
+runs/
+evals/
+pretrained/
+scripts/
+*.stackdump
+.remember/
+.claude/

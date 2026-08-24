@@ -1,7 +1,7 @@
 # HarvestWindow — Model 1 (YOLO detector, B1-B4) training config
 
 model:
-  variant: yolov8n.pt      # nano, CPU-friendly. Swap to yolov8s.pt for more accuracy if you have GPU time to spare.
+  variant: pretrained/yolov8n.pt      # nano, CPU-friendly. Swap to yolov8s.pt for more accuracy if you have GPU time to spare.
 
 data:
   data_yaml: data/SawitMVC/data.yaml   # SawitMVC's own file — defines nc:4, B1-B4 names, train/val/test.txt
@@ -31,5 +31,5 @@ augmentation:
   rotation_degrees: 0.0
 
 output:
-  project: "C:/Users/Mahesa/OneDrive/ITB/Coding/Personal/Competition/AIC - Compfest 2026/to-be-project-folder/runs_model1"
+  project: "C:/Users/Mahesa/OneDrive/ITB/Coding/Personal/Competition/AIC - Compfest 2026/to-be-project-folder/runs/model1"
   name: b1_b4_detector

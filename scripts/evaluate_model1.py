@@ -7,7 +7,7 @@ custom metric code needed. This script just wires the config through
 and prints/saves the results in one place.
 
 Usage:
-    python evaluate_model1.py --config configs/eval_model1_config.yaml
+    python scripts/evaluate_model1.py --config configs/eval_model1_config.yaml
 """
 
 import argparse

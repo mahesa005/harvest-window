@@ -1,0 +1,12 @@
+services:
+  harvestwindow:
+    build: .
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    # Model weights are already committed to the repo under weights/ and
+    # get baked into the image via the Dockerfile's COPY . . — no volume
+    # mount needed for a normal run. Uncomment below only if you want to
+    # swap weights without rebuilding the image:
+    # volumes:
+    #   - ./weights:/app/weights:ro

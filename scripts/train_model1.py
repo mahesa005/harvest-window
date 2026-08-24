@@ -75,7 +75,7 @@ def main():
     best_path = Path(cfg["output"]["project"]) / cfg["output"]["name"] / "weights" / "best.pt"
     print(f"\nTraining complete. Best weights: {best_path}")
     print(f"Plots and metrics saved in: {Path(cfg['output']['project']) / cfg['output']['name']}")
-    print("\nNext: python evaluate_model1.py --config configs/eval_model1_config.yaml")
+    print("\nNext: python scripts/evaluate_model1.py --config configs/eval_model1_config.yaml")
 
 
 if __name__ == "__main__":

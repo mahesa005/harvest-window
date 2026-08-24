@@ -20,7 +20,7 @@ unusable. Flagging so this isn't silently carried into production code.
 
 Usage:
     python pipeline.py --image photo.jpg \
-        --model1 weights/model1_stage_detector_yolo11s.pt \
+        --model1 weights/model1_stage_detector_yolov8n_balanced.pt \
         --model2 weights/model2_ripeness_mobilenetv3large.pt \
         --device cuda
 """
@@ -182,7 +182,7 @@ def classify(image_path: str, model1_path: str, model2_path: str, device: str = 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", required=True, type=str)
-    parser.add_argument("--model1", default="weights/model1_stage_detector_yolo11s.pt", type=str,
+    parser.add_argument("--model1", default="weights/model1_stage_detector_yolov8n_balanced.pt", type=str,
                          help="Path to Model 1 YOLO weights")
     parser.add_argument("--model2", default="weights/model2_ripeness_mobilenetv3large.pt", type=str,
                          help="Path to Model 2 classifier checkpoint")

@@ -15,4 +15,4 @@ metrics:
   - overall_accuracy
 
 output:
-  dir: ./eval_model2
+  dir: ./evals/model2

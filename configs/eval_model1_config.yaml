@@ -1,7 +1,7 @@
 # HarvestWindow — Model 1 evaluation config
 
 model:
-  weights: weights/model1_stage_detector_yolo11s.pt
+  weights: weights/model1_stage_detector_yolov8n_balanced.pt
 
 data:
   data_yaml: data/SawitMVC/data.yaml
@@ -13,4 +13,4 @@ metrics:
   primary: mAP50-95
 
 output:
-  dir: ./eval_model1
+  dir: ./evals/model1

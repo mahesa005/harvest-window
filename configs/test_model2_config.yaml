@@ -31,4 +31,4 @@ augmentation:
   rotation_degrees: 10
 
 output:
-  dir: ./runs_test/test_model2
+  dir: ./runs/test/model2

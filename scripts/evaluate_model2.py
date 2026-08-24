@@ -3,12 +3,15 @@
 HarvestWindow — Model 2 Evaluation (confusion matrix, per-class P/R/F1)
 
 Usage:
-    python evaluate_model2.py --config configs/eval_model2_config.yaml
+    python scripts/evaluate_model2.py --config configs/eval_model2_config.yaml
 """
 
+import sys
 import argparse
 import yaml
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import torch
 from torch.utils.data import DataLoader

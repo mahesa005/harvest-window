@@ -1,7 +1,7 @@
 # HarvestWindow — Model 1 SMOKE TEST config (1 epoch, fast)
 
 model:
-  variant: yolov8n.pt
+  variant: pretrained/yolov8n.pt
 
 data:
   data_yaml: data/SawitMVC/data.yaml
@@ -26,5 +26,5 @@ augmentation:
   rotation_degrees: 0.0
 
 output:
-  project: ./runs_test
+  project: ./runs/test
   name: test_model1

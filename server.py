@@ -23,7 +23,7 @@ from checkpoint_adapter import load_model2
 from pipeline import check_photo_quality, run_model1, run_model2, crop_image
 from recommend import compute_recommendation, compute_confidence, compute_savings_idr
 
-MODEL1_PATH = os.getenv("MODEL1", "weights/model1_stage_detector_yolo11s.pt")
+MODEL1_PATH = os.getenv("MODEL1", "weights/model1_stage_detector_yolov8n_balanced.pt")
 MODEL2_PATH = os.getenv("MODEL2", "weights/model2_ripeness_mobilenetv3large.pt")
 DEVICE = os.getenv("DEVICE", "cuda")
 
