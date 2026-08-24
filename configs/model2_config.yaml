@@ -1,0 +1,34 @@
+# HarvestWindow — Model 2 (ripeness classifier) training config
+
+model:
+  backbone: mobilenet_v2    # mobilenet_v2 | efficientnet_b0 — swap freely, same training code handles both
+  num_classes: 5             # unripe, partially_ripe, ripe, overripe, decayed
+
+data:
+  root: "data/An Ordinal Dataset for Ripeness Level Classification in Oil Palm Fruit Quality Grading/An Ordinal Dataset for Ripeness Level Classification in Oil Palm Fruit Quality Grading/Dataset/Dataset"   # Kamal dataset root (contains Images/ and Train_val_test_split/)
+
+training:
+  epochs: 30
+  batch: 32
+  patience: 7               # early stop if val accuracy doesn't improve for this many epochs
+  seed: 42
+  image_size: 224
+  optimizer:
+    name: adam
+    lr: 0.0001
+    betas: [0.9, 0.999]
+    weight_decay: 0.0001
+
+augmentation:
+  brightness: 0.3
+  contrast: 0.3
+  saturation: 0.2
+  hue: 0.02
+  grayscale_prob: 0.1        # torchvision-only, no YOLO equivalent
+  crop_scale_min: 0.7        # RandomResizedCrop lower bound — zoom jitter
+  crop_scale_max: 1.0
+  hflip_prob: 0.5
+  rotation_degrees: 10
+
+output:
+  dir: "C:/Users/Mahesa/OneDrive/ITB/Coding/Personal/Competition/AIC - Compfest 2026/to-be-project-folder/runs/model2"

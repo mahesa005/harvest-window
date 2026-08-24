@@ -1,0 +1,34 @@
+# HarvestWindow — Model 1 balanced retraining config
+# Identical to model1_config.yaml except:
+#   data_yaml -> data_balanced.yaml (points to oversampled_train.txt, val/test unchanged)
+#   name -> b1_b4_detector_balanced  (separate run dir, does not overwrite original)
+
+model:
+  variant: pretrained/yolov8n.pt
+
+data:
+  data_yaml: data/SawitMVC/data_balanced.yaml
+
+training:
+  epochs: 50
+  imgsz: 640
+  batch: 16
+  patience: 15
+  seed: 42
+  optimizer: AdamW
+  lr0: 0.01
+  workers: 0
+
+augmentation:
+  hue: 0.015
+  saturation: 0.5
+  brightness: 0.4
+  crop_zoom_jitter: 0.5
+  translate: 0.1
+  hflip_prob: 0.5
+  vflip_prob: 0.0
+  rotation_degrees: 0.0
+
+output:
+  project: "C:/Users/Mahesa/OneDrive/ITB/Coding/Personal/Competition/AIC - Compfest 2026/to-be-project-folder/runs/model1"
+  name: b1_b4_detector_balanced

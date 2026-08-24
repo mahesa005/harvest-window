@@ -1,0 +1,16 @@
+# HarvestWindow — Model 1 evaluation config
+
+model:
+  weights: weights/model1_stage_detector_yolov8n_balanced.pt
+
+data:
+  data_yaml: data/SawitMVC/data.yaml
+  split: test          # which split from data.yaml to evaluate on
+
+metrics:
+  # mAP50 and mAP50-95 come free from ultralytics' model.val() — no custom
+  # code needed. Per-class breakdown is included in the same call.
+  primary: mAP50-95
+
+output:
+  dir: ./evals/model1

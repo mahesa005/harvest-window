@@ -1,0 +1,35 @@
+# HarvestWindow — Model 1 (YOLO detector, B1-B4) training config
+
+model:
+  variant: pretrained/yolov8n.pt      # nano, CPU-friendly. Swap to yolov8s.pt for more accuracy if you have GPU time to spare.
+
+data:
+  data_yaml: data/SawitMVC/data.yaml   # SawitMVC's own file — defines nc:4, B1-B4 names, train/val/test.txt
+
+training:
+  epochs: 50
+  imgsz: 640
+  batch: 16
+  patience: 15             # early stop if val mAP doesn't improve for this many epochs
+  seed: 42
+  # optimizer left on ultralytics' "auto" mode by default — it picks SGD/Adam
+  # and warmup schedule based on dataset size. Override below if needed:
+  optimizer: AdamW           # auto | SGD | Adam | AdamW
+  lr0: 0.01                 # only used if optimizer != auto
+  workers: 0                # 0 = load data in main process (avoids Windows venv multiprocessing issue)
+
+augmentation:
+  # Note: no grayscale_prob here — ultralytics has no native equivalent.
+  # HSV jitter below is the closest analog for lighting variation.
+  hue: 0.015                 # hsv_h
+  saturation: 0.5            # hsv_s
+  brightness: 0.4            # hsv_v
+  crop_zoom_jitter: 0.5       # scale
+  translate: 0.1
+  hflip_prob: 0.5
+  vflip_prob: 0.0             # bunches don't naturally appear upside down
+  rotation_degrees: 0.0
+
+output:
+  project: "C:/Users/Mahesa/OneDrive/ITB/Coding/Personal/Competition/AIC - Compfest 2026/to-be-project-folder/runs/model1"
+  name: b1_b4_detector
