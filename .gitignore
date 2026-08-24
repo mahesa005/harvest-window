@@ -6,3 +6,8 @@ runs_test/
 __pycache__/
 *.cache
 .claude
+evals/**/val_batch*.jpg
+evals/**/BoxP_curve.png
+evals/**/BoxPR_curve.png
+evals/**/BoxR_curve.png
+evals/**/confusion_matrix_normalized.png
