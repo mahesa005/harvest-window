@@ -1,0 +1,55 @@
+{
+  "test_accuracy": 0.9707520891364902,
+  "test_ordinal_mae": 0.033426183844011144,
+  "per_class_recall": {
+    "0Immature": 0.9913,
+    "1PartiallyRipe": 0.9624,
+    "2FullyRipe": 0.9778,
+    "3OverRipe": 0.9314,
+    "4Decayed": 1.0
+  },
+  "confusion_matrix": [
+    [
+      114,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      205,
+      7,
+      1,
+      0
+    ],
+    [
+      0,
+      4,
+      220,
+      1,
+      0
+    ],
+    [
+      0,
+      2,
+      3,
+      95,
+      2
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      63
+    ]
+  ],
+  "classes": [
+    "0Immature",
+    "1PartiallyRipe",
+    "2FullyRipe",
+    "3OverRipe",
+    "4Decayed"
+  ]
+}
