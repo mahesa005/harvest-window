@@ -4,6 +4,8 @@ services:
     ports:
       - "8000:8000"
     restart: unless-stopped
+    environment:
+      - DEVICE=${DEVICE:-cuda}
     # Model weights are already committed to the repo under weights/ and
     # get baked into the image via the Dockerfile's COPY . . — no volume
     # mount needed for a normal run. Uncomment below only if you want to
