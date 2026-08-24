@@ -34,7 +34,7 @@ def main():
     print(f"Loading weights: {weights_path}")
     model = YOLO(str(weights_path))
 
-    output_dir = Path(cfg["output"]["dir"])
+    output_dir = Path(cfg["output"]["dir"]).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Evaluating on split: {cfg['data']['split']}")
