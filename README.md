@@ -38,9 +38,17 @@ To stop: `docker compose down`
 
 **CPU-only machines:** the server defaults to CUDA. Override with:
 
+**On Windows (PowerShell):**
+```powershell
+$env:DEVICE = "cpu"; docker compose up --build
+```
+
+**On Linux/macOS (bash):**
 ```bash
 DEVICE=cpu docker compose up --build
 ```
+
+Once running, open **http://localhost:8000** in your browser to access the web UI.
 
 ## API
 
